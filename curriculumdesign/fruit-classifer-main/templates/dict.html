@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="renderer" content="webkit|ie-comp|ie-stand">
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <title>水果百科</title>
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="../static/lib/layui/css/layui.css">
+    <script src="https://unpkg.com/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="../static/lib/layui/layui.js" charset="utf-8"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            color: #21452b;
+            background: linear-gradient(180deg, #f5fff4 0%, #eef8ef 100%);
+        }
+        .page-shell { max-width: 1360px; margin: 0 auto; padding: 22px 22px 110px; }
+        .hero {
+            padding: 28px;
+            border-radius: 28px;
+            background: rgba(255,255,255,0.78);
+            backdrop-filter: blur(16px);
+            box-shadow: 0 18px 48px rgba(43,100,57,0.12);
+            margin-bottom: 18px;
+        }
+        .hero-top { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom: 18px; }
+        .brand { display:flex; align-items:center; gap:16px; }
+        .hero-badges { display:flex; flex-wrap:wrap; gap:10px; }
+        .chip { padding:10px 14px; border-radius:999px; background: rgba(255,255,255,0.72); border:1px solid rgba(77,193,109,0.18); color:#2f7a49; font-size:14px; }
+        .brand-mark {
+            width: 54px; height: 54px; border-radius: 18px; display:grid; place-items:center; color:#fff;
+            font-size: 24px; font-weight: 700; background: linear-gradient(135deg, #4cc16d, #2e8b57);
+            box-shadow: 0 12px 24px rgba(46,139,87,0.28);
+        }
+        .brand h1 { margin:0; font-size: 34px; color:#1f5b33; }
+        .brand p { margin:8px 0 0; color:#5f7564; font-size:15px; }
+        .layui-nav.fruit-nav { border-radius: 18px; background: linear-gradient(90deg, #2f8f57, #4cc16d) !important; }
+        .layui-nav * { font-size: 18px; }
+        .layui-nav .layui-this a, .layui-nav a { color:#fff !important; }
+        .nav-title { color: rgba(255,255,255,0.95); font-size: 18px; }
+        .intro {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-top: 18px;
+        }
+        .intro-card {
+            padding: 16px 18px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(77,193,109,0.12), rgba(255,255,255,0.72));
+            border: 1px solid rgba(77,193,109,0.12);
+        }
+        .intro-card strong { display:block; font-size: 28px; color:#2f8f57; }
+        .intro-card span { display:block; margin-top: 6px; color:#5f7564; font-size: 14px; }
+        .fruit-grid {
+            display:grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 18px;
+        }
+        .fruit-card {
+            display:flex;
+            gap:16px;
+            align-items:center;
+            padding: 20px;
+            border-radius: 24px;
+            background: rgba(255,255,255,0.84);
+            box-shadow: 0 16px 40px rgba(53,102,56,0.12);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+        .fruit-card img {
+            width: 120px;
+            height: 120px;
+            border-radius: 18px;
+            object-fit: cover;
+            flex: 0 0 auto;
+        }
+        .fruit-card h2 { margin: 0; color:#255f39; font-size: 24px; }
+        .fruit-card p { margin: 10px 0 0; color:#5f7564; line-height:1.8; font-size: 14px; }
+        .footer {
+            position: fixed; left:0; bottom:0; width:100%; padding:12px 18px;
+            background: rgba(35,87,49,0.94) !important; color:#fff; backdrop-filter: blur(8px);
+        }
+        .copyright { text-align:center; font-size:14px; }
+        @media (max-width: 1100px) { .hero-top { flex-direction:column; align-items:flex-start; } .intro { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .page-shell { padding: 14px 12px 100px; } .brand h1 { font-size: 26px; } .fruit-card { flex-direction: column; align-items:flex-start; } }
+    </style>
+</head>
+<body>
+<div class="page-shell">
+    <section class="hero">
+        <div class="hero-top">
+            <div class="brand">
+                <div class="brand-mark">E</div>
+                <div>
+                    <h1>水果百科</h1>
+                    
+                </div>
+            </div>
+            <div class="hero-badges">
+                <div class="chip">科普展示</div>
+                <div class="chip">图文并茂</div>
+                <div class="chip">统一风格</div>
+            </div>
+        </div>
+
+        <ul class="layui-nav fruit-nav" lay-filter="">
+            <li class="layui-nav-item"><a href="index.html">系统首页</a></li>
+            <li class="layui-nav-item layui-this"><a href="dict.html">水果百科</a></li>
+        </ul>
+
+        <div class="intro">
+            <div class="intro-card"><strong>4</strong><span>当前展示 4 种水果</span></div>
+            <div class="intro-card"><strong>图文</strong><span>图片与简介结合更直观</span></div>
+            <div class="intro-card"><strong>清新</strong><span>统一绿色主题风格</span></div>
+        </div>
+    </section>
+
+    <main class="fruit-grid">
+        <section class="fruit-card">
+            <img src="../static/images/s1.jpg" alt="苹果">
+            <div>
+                <h2>苹果</h2>
+                <p>苹果是常见水果之一，口感清脆，富含维生素和矿物质，适合直接食用或制作甜点。</p>
+            </div>
+        </section>
+        <section class="fruit-card">
+            <img src="../static/images/s2.jpg" alt="香蕉">
+            <div>
+                <h2>香蕉</h2>
+                <p>香蕉口感软糯，营养丰富，含有较多碳水化合物和钾元素，是非常受欢迎的水果。</p>
+            </div>
+        </section>
+        <section class="fruit-card">
+            <img src="../static/images/s3.jpg" alt="桃子">
+            <div>
+                <h2>桃子</h2>
+                <p>桃子汁水充足、香甜可口，外表带有绒毛，是夏季常见的应季水果。</p>
+            </div>
+        </section>
+        <section class="fruit-card">
+            <img src="../static/images/s4.jpg" alt="葡萄">
+            <div>
+                <h2>葡萄</h2>
+                <p>葡萄颗粒饱满、风味多样，可鲜食、制干，也可用于酿酒和加工食品。</p>
+            </div>
+        </section>
+    </main>
+</div>
+<div class="footer"><div class="copyright">Copyright ©2022 DumbDumbDumbDumb 本项目开源地址：https://github.com/jiamin329/fruit-classifer</div></div>
+</body>
+</html>

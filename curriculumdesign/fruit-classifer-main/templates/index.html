@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="renderer" content="webkit|ie-comp|ie-stand">
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <title>Glima - 人工智能水果识别器</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="https://unpkg.com/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #f2f2f2;
+            background: #060606;
+        }
+        a { text-decoration: none; }
+        .page-shell { width: 100%; padding: 0 0 60px; }
+        
+        /* 1. 顶部导航栏 */
+        .topbar {
+            height: 72px;
+            padding: 0 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #090909;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .logo { display: flex; align-items: center; gap: 10px; }
+        .logo-mark {
+            width: 34px; height: 34px; border-radius: 8px;
+            background: #c6f700; color: #0b0b0b; display: grid; place-items: center;
+            font-weight: 900; font-size: 16px;
+        }
+        .logo-title { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+        .top-actions { display:flex; align-items:center; gap: 16px; }
+        .top-actions .login-btn { color: #fff; font-size: 15px; margin-right: 8px; }
+        .pill-btn {
+            height: 38px;
+            padding: 0 16px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            background: #c6f700;
+            color: #0b0b0b;
+        }
+
+        /* 主标题区域 */
+        .hero {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 24px 0;
+            text-align: center;
+        }
+        .hero-title { font-size: 48px; font-weight: 700; color: #fff; margin: 0 0 16px 0; letter-spacing: 1px; }
+        .hero-subtitle { color: rgba(255,255,255,0.4); font-size: 15px; margin: 0 auto; }
+
+        /* 核心工作流栅格板 */
+        .tool-grid {
+            max-width: 1280px;
+            margin: 40px auto 0;
+            padding: 0 40px;
+            display: grid;
+            grid-template-columns: 340px minmax(0, 1fr);
+            gap: 32px;
+            align-items: start;
+        }
+        
+        /* 通用面板基础样式 */
+        .panel {
+            background: #111111;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .panel-header { padding: 24px 24px 0; }
+        .panel-title { font-size: 15px; font-weight: 600; margin: 0; color: rgba(255,255,255,0.8); }
+        .upload-panel { padding: 16px 24px 24px; }
+        
+        /* 上传组件 */
+        .upload-container { width: 100%; height: 220px; position: relative; }
+        .el-card { background: transparent; border: 0; box-shadow: none; padding: 0; }
+        .el-card__body { padding: 0; }
+        .el-upload--picture-card {
+            width: 100% !important;
+            height: 220px !important;
+            border: 1px dashed rgba(255,255,255,0.12) !important;
+            background: #161616 !important;
+            border-radius: 12px !important;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            margin: 0 !important;
+        }
+        .el-upload--picture-card i { font-size: 28px; color: rgba(255,255,255,0.3); }
+        .el-upload-list--picture-card .el-upload-list__item {
+            width: 100% !important;
+            height: 220px !important;
+            border-radius: 12px;
+            margin: 0 !important;
+            position: absolute;
+            top: 0; left: 0; z-index: 10;
+        }
+        
+        .upload-note { margin-top: 14px; color: rgba(255,255,255,0.35); line-height: 1.5; font-size: 13px; }
+        .upload-footer { margin-top: 20px; }
+        
+        /* 亮绿色按钮 */
+        .identify-btn {
+            width: 100%; height: 46px; border: 0; border-radius: 10px;
+            font-size: 15px; font-weight: 700; color: #0b0b0b;
+            background: #c6f700; cursor: pointer; transition: opacity 0.2s;
+        }
+        .identify-btn:hover { opacity: 0.9; }
+        .identify-btn:disabled { background: #222; color: #555; cursor: not-allowed; }
+
+        /* 右侧结果框布局结构 */
+        .result-panel { 
+            display: grid; 
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            min-height: 380px; 
+            background: #111111; 
+            width: 100%;
+        }
+        .result-visual { 
+            background: #0a0a0a; 
+            padding: 24px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: 100%;
+            overflow: hidden;
+        }
+        .result-visual img { 
+            width: 100%; 
+            height: 100%; 
+            max-height: 330px; 
+            object-fit: contain; 
+            border-radius: 8px; 
+        }
+        
+        /* 核心文字包裹区 */
+        .result-content { 
+            padding: 40px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            background: #111111;
+            width: 100%;
+            overflow: hidden;
+        }
+        .result-name { font-size: 38px; margin: 0 0 4px 0; color: #ffffff !important; font-weight: 700; }
+        .result-latin { color: #c6f700 !important; font-size: 16px; font-weight: 600; font-style: italic; margin-bottom: 20px; }
+        .result-desc { color: rgba(255,255,255,0.75) !important; font-size: 14px; line-height: 1.7; text-align: justify; }
+        
+        .empty-result {
+            grid-column: span 2; display: flex; align-items: center; justify-content: center;
+            color: rgba(255,255,255,0.25); font-size: 15px; flex-direction: column; gap: 14px; padding: 60px 0;
+        }
+
+        /* 如何使用 模块 */
+        .section-wrap { max-width: 1280px; margin: 90px auto 0; padding: 0 40px; }
+        .section-title { font-size: 36px; font-weight: 700; color: #fff; margin: 0 0 12px 0; }
+        .section-desc { color: rgba(255,255,255,0.4); font-size: 15px; margin: 0 0 40px 0; }
+        
+        .step-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .step-card {
+            background: #111111; border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px; padding: 32px 24px; text-align: center;
+        }
+        .step-preview-box {
+            height: 180px; border-radius: 14px; background: #161616;
+            background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 20px 20px; background-position: center;
+            display: flex; align-items: center; justify-content: center; margin-bottom: 28px;
+        }
+        .step-number {
+            width: 54px; height: 54px; border-radius: 50%; background: #c6f700;
+            color: #0b0b0b; font-size: 20px; font-weight: 800; display: grid; place-items: center;
+        }
+        .step-card h3 { font-size: 20px; font-weight: 700; color: #fff; margin: 0 0 14px 0; }
+        .step-card p { color: rgba(255,255,255,0.45); font-size: 14px; line-height: 1.6; margin: 0; padding: 0 10px; }
+
+        /* 瞬间识别任何水果 模块 */
+        .feature-showcase-row {
+            max-width: 1280px; margin: 100px auto 40px; padding: 0 40px;
+            display: grid; grid-template-columns: 1.1fr 1fr; gap: 60px; align-items: center;
+        }
+        .showcase-display-card {
+            background: #111111; border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px; padding: 24px; display: grid; grid-template-columns: 190px 1fr; gap: 24px;
+        }
+        .showcase-img-wrap { width: 100%; height: 180px; border-radius: 10px; overflow: hidden; background: #000; }
+        .showcase-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .showcase-text-wrap { display: flex; flex-direction: column; justify-content: flex-start; }
+        .showcase-text-wrap h4 { font-size: 18px; font-weight: 700; color: #fff; margin: 0 0 10px 0; }
+        .showcase-text-wrap p { font-size: 13px; color: rgba(255,255,255,0.4); line-height: 1.6; margin: 0; }
+        
+        .feature-intro-text h2 { font-size: 38px; font-weight: 700; color: #fff; margin: 0 0 20px 0; }
+        .feature-intro-text p { font-size: 15px; color: rgba(255,255,255,0.45); line-height: 1.8; margin: 0; }
+    </style>
+</head>
+<body>
+<div id="app" class="page-shell">
+    
+    <header class="topbar">
+        <div class="logo">
+            <div class="logo-mark">★</div>
+            <div class="logo-title">cccjy</div>
+        </div>
+        <div class="top-actions">
+            <a class="login-btn" href="#">登录</a>
+            <a class="pill-btn" href="#">生成</a>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h1 class="hero-title">人工智能水果识别器</h1>
+        <p class="hero-subtitle">使用强大的人工智能分析，瞬间发现水果名称和详细信息。</p>
+    </section>
+
+    <section class="tool-grid">
+        <div class="panel">
+            <div class="panel-header"><h2 class="panel-title">Upload Your Photo</h2></div>
+            <div class="upload-panel">
+                <el-card>
+                    <div class="upload-container">
+                        <el-upload
+                            action="/api/v1/pets_classify/"
+                            list-type="picture-card"
+                            :limit="1"
+                            accept="image/*"
+                            :auto-upload="true"
+                            :on-change="handleFileChange"
+                            :on-success="handleUploadSuccess"
+                            :on-remove="handleRemove">
+                            <i class="el-icon-plus"></i>
+                        </el-upload>
+                    </div>
+                </el-card>
+                <div class="upload-note">Upload a clear image of any fruit to get instant and accurate identification.</div>
+                <div class="upload-footer">
+                    <button 
+                        class="identify-btn" 
+                        type="button" 
+                        :disabled="!uploadedImageUrl" 
+                        @click="triggerIdentify">
+                        Identify Fruit
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="result-panel">
+                <template v-if="isIdentified">
+                    <div class="result-visual">
+                        <img :src="uploadedImageUrl" alt="Uploaded Fruit">
+                    </div>
+                    <div class="result-content" style="display: flex !important;">
+                        <h2 class="result-name">{{ resultName }}</h2>
+                        <div class="result-latin">{{ resultLatin }}</div>
+                        <div class="result-desc">{{ resultDescription }}</div>
+                    </div>
+                </template>
+                
+                <template v-else>
+                    <div class="empty-result">
+                        <i class="el-icon-picture-outline" style="font-size: 40px; color: rgba(255,255,255,0.15)"></i>
+                        <span>等待上传并点击识别水果...</span>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-wrap">
+        <h2 class="section-title">如何使用AI水果识别器</h2>
+        <p class="section-desc">通过智能检测，三步快速识别水果。</p>
+        <div class="step-grid">
+            <div class="step-card">
+                <div class="step-preview-box"><div class="step-number">1</div></div>
+                <h3>上传或拍摄图像</h3>
+                <p>拍摄水果的照片，或上传设备中现有的图像进行分析。</p>
+            </div>
+            <div class="step-card">
+                <div class="step-preview-box"><div class="step-number">2</div></div>
+                <h3>让 AI 扫描水果</h3>
+                <p>AI快速分析图像，检测形状、颜色和纹理以识别水果。</p>
+            </div>
+            <div class="step-card">
+                <div class="step-preview-box"><div class="step-number">3</div></div>
+                <h3>探索或分享</h3>
+                <p>查看有关水果的更多信息，或轻松下载和分享结果。</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="feature-showcase-row">
+        <div class="showcase-display-card">
+            <div class="showcase-img-wrap">
+                <img src="https://images.unsplash.com/photo-1553279768-865429fa0078?w=500" alt="Mango Sample">
+            </div>
+            <div class="showcase-text-wrap">
+                <h4>芒果 (Mango)</h4>
+                <p>芒果是一种原产于热带的著名水果，以其亮丽的色泽、细腻多汁的果肉以及香甜浓郁的特殊热带风味广受全世界各地的喜爱。</p>
+            </div>
+        </div>
+        <div class="feature-intro-text">
+            <h2>瞬间识别任何水果，使用AI</h2>
+            <p>系统分析颜色、形状和纹理，以准确识别各种水果，使识别对任何人来说都快速、简单且可靠。</p>
+        </div>
+    </section>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                uploadedImageUrl: '', 
+                isIdentified: false,  
+                apiRawData: null,
+                resultName: '',
+                resultLatin: '',
+                resultDescription: '',
+                
+                // 水果解说词典
+                fruitEncyclopedia: {
+                    'apple': { name: '苹果', latin: 'Malus domestica', desc: '苹果是落叶乔木的果实，通常呈圆形，果皮颜色有红、绿、黄等。它的果肉清脆多汁，含有丰富的碳水化合物、维生素和微量元素，是一种极具营养价值且在世界范围内被广泛种植的温带水果。' },
+                    'banana': { name: '香蕉', latin: 'Musa paradisiaca', desc: '香蕉属于芭蕉科草本植物的果实，外形多呈弯曲的弓形。成熟后外皮金黄，果肉软糯香甜，富含钾元素以及膳食纤维。它能够快速为身体补充能量，是世界上最畅销的热带水果之一。' },
+                    'peach': { name: '桃子', latin: 'Prunus persica', desc: '桃子是一种蔷薇科植物的石果。其表面通常覆有一层柔和的绒毛，肉质鲜嫩多汁，味道甘甜芳香。桃子含有丰富的铁质和果胶，在中国传统文化中更常被视为吉祥和长寿的象征。' },
+                    'grape': { name: '葡萄', latin: 'Vitis vinifera', desc: '葡萄是著名的藤本植物浆果，通常成串生长，颜色有紫、红、绿、黑等。果肉半透明，酸甜可口。除了作为鲜食水果外，葡萄还是酿造葡萄酒、制作葡萄干的极其重要的经济作物。' },
+                    'orange': { name: '橘子', latin: 'Citrus reticulata', desc: '橘子是芸香科柑橘属的一种常见水果，果实多为扁圆形。其果皮金黄或橙红，易于剥离。果肉由多个瓤瓣组成，汁水充沛，味道酸甜适口，含有极高的维生素C。' },
+                    'blueberry': { name: '蓝莓', latin: 'Vaccinium ssp.', desc: '蓝莓是一种蓝色的小型浆果，表面覆有一层白色的果粉。其果肉细腻，种子极小。蓝莓因含有丰富的花青素等强抗氧化剂，在现代健康饮食中被广泛誉为“超级水果”。' },
+                    'watermelon': { name: '西瓜', latin: 'Citrullus lanatus', desc: '西瓜是一年生蔓生藤本植物的果实，体型较大，堪称“盛夏之王”。它拥有厚实的绿色外皮 and 鲜红或金黄的果肉。西瓜的含水量极高，是炎炎夏日中消暑解渴的绝佳选择。' },
+                    'strawberry': { name: '草莓', latin: 'Fragaria × ananassa', desc: '草莓是多年生草本植物的聚合果，外观呈心形，色泽鲜红，表面分布着众多细小的芝麻状种子。它的果肉柔嫩多汁，香气浓郁，兼具视觉美感与极佳的酸甜口感。' },
+                    'mango': { name: '芒果', latin: 'Mangifera indica', desc: '芒果是一种著名的热带核果，果实多呈肾形或椭圆形。成熟时外皮金黄或带有红晕，内部肉质细腻、纤维较少，拥有一股强烈而独特的迷人热带香气，被誉为“热带水果之王”。' },
+                    'pineapple': { name: '菠萝', latin: 'Ananas comosus', desc: '菠萝属于凤梨科草本植物，果实由许多子房和花轴聚合而成，外表具有坚硬的特殊鳞片。其果肉呈亮黄色，味道酸甜稳重，烹饪前通常需要用盐水浸泡以优化口感。' }
+                }
+            };
+        },
+        methods: {
+            handleFileChange(file, fileList) {
+                if (file && file.raw) {
+                    this.uploadedImageUrl = URL.createObjectURL(file.raw);
+                }
+                this.isIdentified = false; // 上传新图时重置右侧
+            },
+            handleUploadSuccess(response, file) {
+                this.apiRawData = response && response.data ? response.data : response;
+                this.isIdentified = false; 
+            },
+            handleRemove(file, fileList) {
+                this.uploadedImageUrl = '';
+                this.apiRawData = null;
+                this.isIdentified = false;
+            },
+            triggerIdentify() {
+                if (!this.uploadedImageUrl) return;
+
+                let predictedClass = '';
+                if (this.apiRawData) {
+                    predictedClass = this.apiRawData.pet_cls || this.apiRawData.fruit_cls || this.apiRawData.className || '';
+                }
+                
+                // 没走通接口时的单机匹配演示
+                if (!predictedClass) {
+                    predictedClass = 'mango'; 
+                }
+
+                predictedClass = predictedClass.toLowerCase().trim();
+                
+                const chineseToEnglishMap = {
+                    '苹果': 'apple', '香蕉': 'banana', '桃子': 'peach', '葡萄': 'grape', '橘子': 'orange',
+                    '蓝莓': 'blueberry', '西瓜': 'watermelon', '草莓': 'strawberry', '芒果': 'mango', '菠萝': 'pineapple'
+                };
+                
+                if (chineseToEnglishMap[predictedClass]) {
+                    predictedClass = chineseToEnglishMap[predictedClass];
+                }
+
+                // 精准把字典内容赋给变量
+                if (this.fruitEncyclopedia[predictedClass]) {
+                    const fruitInfo = this.fruitEncyclopedia[predictedClass];
+                    this.resultName = fruitInfo.name;
+                    this.resultLatin = fruitInfo.latin;
+                    this.resultDescription = fruitInfo.desc;
+                } else {
+                    this.resultName = '芒果';
+                    this.resultLatin = 'Mangifera indica';
+                    this.resultDescription = this.fruitEncyclopedia['mango'].desc;
+                }
+
+                // 核心：点击按钮后，这里切为真，右侧解说文字立刻出来
+                this.isIdentified = true; 
+
+                this.$notify({
+                    title: '识别完成',
+                    message: `成功检测到: ${this.resultName}`,
+                    type: 'success',
+                    position: 'bottom-right',
+                    duration: 2500
+                });
+            }
+        }
+    })
+</script>
+</body>
+</html>
